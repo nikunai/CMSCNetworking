@@ -9,4 +9,7 @@ Log:
 resources:
 	https://www.ibm.com/docs/en/i/7.3?topic=communications-socket-programming
 	https://pubs.opengroup.org/onlinepubs/7908799/xns/syssocket.h.html
-	socket(): https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/socket.html
+	https://www.gta.ufrj.br/ensino/eel878/sockets/sockaddr_inman.html
+
+
+socket(): https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/socket.html
