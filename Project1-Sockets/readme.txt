@@ -3,7 +3,8 @@ INTRO:
 
 
 Log:
-	19MAR24: Repo Created, begin blocking
+	19MAR24: Repo Created, begin blocking (2hours)
+	20MAR24: Working on server & r&d. (3hours)
 
 
 resources:
