@@ -13,3 +13,8 @@ resources:
 
 
 socket(): https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/socket.html
+	  https://man7.org/linux/man-pages/man7/socket.7.html
+
+bind(): https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-bind-bind-name-socket
+
+struct sockaddr: https://man7.org/linux/man-pages/man3/sockaddr.3type.html
