@@ -5,26 +5,60 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h> //for the inet_addr()
+#include <unistd.h> // for close()
 #include "grades.h"
 #define PORT 42069 //PORT for server
 #define MAX_CONNECTION_BACKLOG 10 //how many connections listen will allow before it bounces
 #define MAX_BUFFER_LENGTH 256 //This is the buffer such that the sent item will be injective.
 #define ADDRESS "172.21.77.0"
 #define IS_LOCAL_MACHINE 1
+#define PROJECT_TYPE 3 // OPT 1: TO-DO Calender, OPT 2: Class Schedule, OPT 3: Managign Grades
 
 int main(int argc,char *argv[]){
 
   int fileDescriptor = -1;
   int connectionDescriptor = -1;
   int returnValue = -1;
+  int length;
   char buffer[MAX_BUFFER_LENGTH];
   struct Grades grades;
   memset(&grades, 0, sizeof(grades));
   struct sockaddr_in serverAddress;
+
+
+  
+  /*
+    Variable SETUP - THe following Block sets up the variables of the above
+    length - the summation of the respective structs based on PROJECT_TYPE
+    
+
+   */
+  switch(PROJECT_TYPE)
+    {
+    case 1:
+      perror("Case 1 NOT Implemented");
+      exit(1);
+      break;
+      
+    case 2:
+      perror("Case 2 NOT Implemented");
+      exit(1);
+    break;
+    
+    case 3:
+    //Determine the length of the true buffer
+      length = sizeof(grades._semester) + sizeof(grades._subject) + sizeof(grades._grade) + sizeof(grades._creditHour);
+      break;
+      
+    default:
+      perror("Check the constant PROJECT_TYPE: It is not set properly");
+      exit(1);
+    }
+
+  
   //AF_INET: IP_v4
   //SOCK_STREAM: Full Duplex (read/write)
   //0: the default
-  
   fileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
   if(fileDescriptor < 0)
     {
@@ -79,9 +113,47 @@ int main(int argc,char *argv[]){
     perror("connect() failed");
     exit(1);
   }
+
+  //Set send receive loop here NOT YET IMPLEMENTED----------------------------------------------------------------------------------------------------
+
+  //socket will wait for the entirety of the object to be sent over before it mvoes on. E.g, the sum of all of the structs primitives.
+  returnValue = setsockopt(connectionDescriptor, SOL_SOCKET, SO_RCVLOWAT, (char*)&length, sizeof(length));
+  if(returnValue < 0){
+    perror("setsockopt(SO_RCVLOWAT) failed");
+    exit(1);
+  }
+  
+  //receive all data
+  //Third param is the size of the buffer, not the length of receive.
+  returnValue = recv(connectionDescriptor, buffer, sizeof(buffer), 0);
+  if(returnValue < 0){
+    perror("bad recieve");
+    exit(1);
+  }
+  
+  returnValue = send(connectionDescriptor, buffer, length, 0);
+  if(returnValue < 0)
+    {
+      perror("bad send()");
+      exit(1);
+    }
+  
+		    
+
+ 
+  
+  
+
   
   
   
+  if(fileDescriptor != -1){
+    close(fileDescriptor);
+  }
+  if(connectionDescriptor != -1){
+    close(connectionDescriptor);
+  }
+			  
   
   
   

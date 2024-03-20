@@ -1,7 +1,11 @@
 INTRO:
 
-
-
+TODO:
+	Handshake
+	Multiple Connections
+	.
+	.
+	.
 Log:
 	19MAR24: Repo Created, begin blocking (2hours)
 	20MAR24: Working on server & r&d. (3hours)
@@ -18,4 +22,11 @@ socket(): https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/socket.html
 
 bind(): https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-bind-bind-name-socket
 
+recv(): https://man7.org/linux/man-pages/man2/recv.2.html
+	https://www.ibm.com/docs/en/ztpf/2020?topic=apis-recv-receive-data-connected-socket
+
+send(): https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-send-send-data-socket
+
 struct sockaddr: https://man7.org/linux/man-pages/man3/sockaddr.3type.html
+
+
