@@ -31,4 +31,6 @@ resources:
 
 	struct sockaddr: https://man7.org/linux/man-pages/man3/sockaddr.3type.html
 
+	struct addrinfo: https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
+
 

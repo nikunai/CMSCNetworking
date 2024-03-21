@@ -10,7 +10,7 @@
 #define PORT 42069 //PORT for server
 #define MAX_CONNECTION_BACKLOG 10 //how many connections listen will allow before it bounces
 #define MAX_BUFFER_LENGTH 256 //This is the buffer such that the sent item will be injective.
-#define ADDRESS "172.21.77.0"
+#define ADDRESS "172.21.77.0" //this is the server address
 #define IS_LOCAL_MACHINE 1
 #define PROJECT_TYPE 3 // OPT 1: TO-DO Calender, OPT 2: Class Schedule, OPT 3: Managign Grades
 
@@ -130,7 +130,6 @@ int main(int argc,char *argv[]){
     perror("bad recieve");
     exit(1);
   }
-  printf(buffer);
   
   returnValue = send(connectionDescriptor, buffer, length, 0);
   if(returnValue < 0)
