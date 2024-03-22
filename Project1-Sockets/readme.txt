@@ -11,6 +11,8 @@ Log:
 	19MAR24: Repo Created, begin blocking (2hours)
 	20MAR24: Working on server & r&d. Finished basic server framework(3hours)
 		 -MUST TEST SERVER
+	21MAR24: Server <-> Client connection established (2hr)
+		 
 
 
 resources:

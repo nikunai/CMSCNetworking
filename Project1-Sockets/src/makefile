@@ -25,7 +25,7 @@ RSER: server
 	./$(SERVER_EXE)
 
 RCLI: client
-	./$(CLIENT_EXE)
+	./$(CLIENT_EXE)	
 
 
 

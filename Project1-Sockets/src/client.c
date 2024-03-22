@@ -15,7 +15,9 @@
 #define PROJECT_TYPE 3 // OPT 1: TO-DO Calender, OPT 2: Class Schedule, OPT 3: Managign Grades
 #define SERVER_NAME "CMSC481 HOST"
 
-int main(int argc,char *argv[]){ 
+int main(int argc,char *argv[]){
+
+  
   int fileDescriptor = -1;
   int connectionDescriptor = -1;
   int returnValue = -1;
@@ -25,6 +27,11 @@ int main(int argc,char *argv[]){
   memset(&grades, 0, sizeof(grades));
   struct sockaddr_in serverAddress;
   //struct addrinfo hints, *res;
+  
+  if(argc < 2){
+    printf("Please run again with format ./CLIENT <username>\n");
+    exit(1);
+  } 
 
 
   fileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
@@ -60,13 +67,21 @@ int main(int argc,char *argv[]){
 
   //for testing only
   memset(buffer, '1', sizeof(buffer));
-  returnValue = send(fileDescriptor, buffer, sizeof(buffer), 0);
+  returnValue = send(fileDescriptor, argv[1], sizeof(buffer), 0);
   if(returnValue < 0)
     {
       perror("send() failed.");
       exit(1);	     
     }
-
+   memset(buffer, '0', sizeof(buffer));
+  returnValue = recv(fileDescriptor, buffer, sizeof(buffer), 0);
+  if(returnValue < 0)
+    {
+      perror("recv() failed.");
+      exit(1);
+    }
+  printf(buffer);
+  
   
   
   
