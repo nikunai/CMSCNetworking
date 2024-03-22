@@ -12,6 +12,7 @@ Log:
 	20MAR24: Working on server & r&d. Finished basic server framework(3hours)
 		 -MUST TEST SERVER
 	21MAR24: Server <-> Client connection established (2hr)
+		 CHAP additions (1hr)
 		 
 
 
