@@ -2,8 +2,8 @@ INTRO:
 	SERVER must be run in the same foulder as /usr
 
 TODO:
-	Handshake
-	Multiple Connections
+	Handshake (DONE)
+	Multiple Connections (in progress)
 	buffer parsing function
 	.
 	.
@@ -14,6 +14,7 @@ Log:
 		 -MUST TEST SERVER
 	21MAR24: Server <-> Client connection established (2hr)
 		 CHAP additions (1hr)
+	22MAR24: CHAP additions (2.5hr), all finished except pipe additions
 		 
 
 
