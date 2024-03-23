@@ -7,6 +7,9 @@
 #include <arpa/inet.h> //for the inet_addr()
 #include <unistd.h> // for close()
 #include "grades.h"
+#include "helperFunctions.h"
+#include "md5.h"
+#include "connectionDescription.h"
 #define PORT 42069 //PORT for server
 #define MAX_CONNECTION_BACKLOG 10 //how many connections listen will allow before it bounces
 #define MAX_BUFFER_LENGTH 256 //This is the buffer such that the sent item will be injective.
@@ -17,7 +20,8 @@
 
 
 void establishServer(int *fileDescriptor);
-void acceptAndValidate(int* pipes, int *fileDescriptor, char* buffer);
+void acceptAndValidate(struct ConnectionDescription** pipes, int *fileDescriptor, char* buffer);
+void challenge(char* buffer);
 
 
 int main(int argc,char *argv[]){
@@ -25,7 +29,7 @@ int main(int argc,char *argv[]){
   int connectionDescriptor = -1;
   int returnValue = -1;
   int length;
-  int pipes[MAX_CONNECTIONS];
+  struct ConnectionDescription *pipes[MAX_CONNECTIONS];
   char buffer[MAX_BUFFER_LENGTH];
   struct Grades grades;
   memset(&grades, 0, sizeof(grades));
@@ -194,11 +198,19 @@ void establishServer(int *fileDescriptor){
 /* Name: acceptAndVerify */
 /* DESC: accepts a new connection, and verifies whether it should be maintained */
 /* Param: the array that contains all the client connections, file descriptor */ 
-void acceptAndValidate(int* pipes, int* fileDescriptor, char* buffer){
+void acceptAndValidate(struct ConnectionDescription** pipes, int* fileDescriptor, char* buffer){
   int connectionDescriptor = -1;
+  int validCredentials = -1;
   int returnValue = -1;
   FILE *userFile = NULL;
+  char filePath[MAX_BUFFER_LENGTH];
+  char password[MAX_BUFFER_LENGTH];
+  char temp[MAX_BUFFER_LENGTH];
+  int length = MAX_BUFFER_LENGTH;
+  uint8_t hash = -1;
   
+  memset(filePath, 0, sizeof(filePath));
+	 
   //Accepts incoming connectinos
   //this is a blocking function
   //so after listen opens the port, the accept will block until a connection comes in
@@ -208,45 +220,125 @@ void acceptAndValidate(int* pipes, int* fileDescriptor, char* buffer){
     exit(1);
   }
 
+
+
+  /*sets the recv to only wake when all of buffer is sent. buffer is the same size for client and server*/
+  returnValue = (connectionDescriptor, SOL_SOCKET, SO_RCVLOWAT, (char *)&length, sizeof(length));
+  if(returnValue < 0)
+    {
+      perror("setsockopt fails");
+      exit(1);
+    }
+
+  
+
   
   //Authentication here
-  returnValue = recv(connectionDescriptor, buffer, sizeof(buffer), 0);
+  returnValue = recv(connectionDescriptor, buffer, MAX_BUFFER_LENGTH, 0);
   if(returnValue < 0)
     {
       perror("bad recieve");
       exit(1);
     }
-  printf(buffer);
-  returnValue = send(connectionDescriptor, buffer, sizeof(buffer), 0);
-  if(returnValue < 0)
-    {
-      perror("bad send()");
-      exit(1);
-    }
-
-  userFile = fopen(buffer, "r");
-
+  strcpy(filePath, getenv("PWD"));
+  concatenateString(filePath, "/usr/");
+  concatenateString(filePath, buffer);
+  
+  printf("%s\n", filePath);
+  userFile = fopen(filePath, "r");
+  
   if(userFile != NULL)
     {
       /*promt for password */
-      
+      memset(buffer, 0, MAX_BUFFER_LENGTH * sizeof(char));
+      challenge(buffer);
+      strcpy(password, buffer);
+      returnValue = send(connectionDescriptor, buffer, MAX_BUFFER_LENGTH, 0);
+      printf("%s, %d, %d\n", buffer, returnValue, sizeof(buffer));
+      if(returnValue < 0)
+	{
+	  perror("bad send()");
+	  exit(1);
+	}
 
+      memset(buffer, 0, MAX_BUFFER_LENGTH * sizeof(char));
+      //recieve the hashed password
+      returnValue = recv(connectionDescriptor, buffer, MAX_BUFFER_LENGTH, 0);
+      if(returnValue < 0)
+	{
+	  perror("bad recieve");
+	  exit(1);
+	}
+      fgets(temp, sizeof(password), userFile);
+      concatenateString(password, temp);
+      md5String(password, &hash);
+      char* toBeDeleted = convert(&hash);
+      strcpy(password, toBeDeleted);
+      free(toBeDeleted);
+      printf("%s%d" , password, sizeof(password));
+
+      if(strcmp(password, buffer) == 0) //correct password
+	{
+	  validCredentials = 1;
+	  memset(buffer, 0, sizeof(buffer));
+	  buffer = "200";	     
+	  returnValue = send(connectionDescriptor, buffer, MAX_BUFFER_LENGTH, 0);
+	  if(returnValue < 0)
+	    {
+	      perror("bad send()");
+	      exit(1);
+	    }
+	}
+      else //wrong password
+	{
+	  memset(buffer, 0, sizeof(buffer));
+	  buffer = "400";	     
+	  returnValue = send(connectionDescriptor, buffer, MAX_BUFFER_LENGTH, 0);
+	  if(returnValue < 0)
+	    {
+	      perror("bad send()");
+	      exit(1);
+	    }
+	}
     }
-  else
+  else //no user found
     {
-      printf("User Not Found");
+      memset(buffer, 0, sizeof(buffer));
+      buffer = "400";	     
+      returnValue = send(connectionDescriptor, buffer, MAX_BUFFER_LENGTH, 0);
+      if(returnValue < 0)
+	{
+	  perror("bad send()");
+	  exit(1);
+	}
     }
-		     
-
-
-
   
+  
+  
+      
+  
+  /* if(validCredentials == 1) */
+  /*   { */
+  /*     struct ConnectionDescription* temp =(struct ConnectionDescription *)malloc(sizeof(struct ConnectionDescription)); */
+  /*     temp -> connectionDescriptor = connectionDescriptor; */
+  /*     strcpy(temp -> filePath, filePath); */
+  /*     //as pipes was memset to -1, this should mean that either a, the pipe has been closed, or b that it has never been used. */
+  /*     for(int i = 0; i < sizeof(pipes)/sizeof(struct ConnectionDescription *); i++) */
+  /* 	{ */
+  /* 	  if((*(pipes[i])).connectionDescriptor == -1) */
+  /* 	    { */
+  /* 	      pipes[i] = temp; */
+  /* 	    } */
+  /* 	} */
+  /*   } */
+}
 
-  //as pipes was memset to -1, this should mean that either a, the pipe has been closed, or b that it has never been used.
-  for(int i = 0; i < sizeof(pipes)/sizeof(int); i++){
-    if(pipes[i] == -1){
-      pipes[i] = connectionDescriptor;
-    }
 
+/* name: challenge() */
+/* param: cstring buffer */
+/* desc; populates buffer with a 10 char random sequence */
+void challenge(char* buffer){
+  for(int i = 0; i < 10; i++){
+    buffer[i] = 33 + (rand() % 93);
   }
 }

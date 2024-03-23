@@ -1,4 +1,5 @@
 INTRO:
+	SERVER must be run in the same foulder as /usr
 
 TODO:
 	Handshake
@@ -35,5 +36,8 @@ resources:
 	struct sockaddr: https://man7.org/linux/man-pages/man3/sockaddr.3type.html
 
 	struct addrinfo: https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
+
+
+	STOLE Zunawe md5 hash algorithm. Find it here https://github.com/Zunawe/md5-c
 
 

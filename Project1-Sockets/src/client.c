@@ -7,6 +7,9 @@
 #include <arpa/inet.h> //for the inet_addr()
 #include <unistd.h> // for close()
 #include "grades.h"
+#include "md5.h"
+#include "helperFunctions.h"
+
 #define PORT 42069 //PORT for server
 #define MAX_CONNECTION_BACKLOG 10 //how many connections listen will allow before it bounces
 #define MAX_BUFFER_LENGTH 256 //This is the buffer such that the sent item will be injective.
@@ -16,20 +19,22 @@
 #define SERVER_NAME "CMSC481 HOST"
 
 int main(int argc,char *argv[]){
-
-  
+  int isConnected = -1;
+  uint8_t hash = -1; 
   int fileDescriptor = -1;
   int connectionDescriptor = -1;
   int returnValue = -1;
   int length;
+  int bytesReceived = 0;
   char buffer[MAX_BUFFER_LENGTH];
   struct Grades grades;
   memset(&grades, 0, sizeof(grades));
+  memset(buffer, 0, sizeof(buffer));
   struct sockaddr_in serverAddress;
   //struct addrinfo hints, *res;
   
-  if(argc < 2){
-    printf("Please run again with format ./CLIENT <username>\n");
+  if(argc < 3){
+    printf("Please run again with format ./CLIENT <username> <password>\n");
     exit(1);
   } 
 
@@ -65,33 +70,77 @@ int main(int argc,char *argv[]){
     }
 
 
-  //for testing only
-  memset(buffer, '1', sizeof(buffer));
-  returnValue = send(fileDescriptor, argv[1], sizeof(buffer), 0);
+  //Begin handshake, send username
+  //send username
+  returnValue = send(fileDescriptor, argv[1], MAX_BUFFER_LENGTH, 0);
   if(returnValue < 0)
     {
       perror("send() failed.");
       exit(1);	     
     }
-   memset(buffer, '0', sizeof(buffer));
-  returnValue = recv(fileDescriptor, buffer, sizeof(buffer), 0);
-  if(returnValue < 0)
+  //receive the hash or if the username failed
+  memset(buffer, '0', sizeof(char) * MAX_BUFFER_LENGTH);
+  while(bytesReceived < MAX_BUFFER_LENGTH)
     {
-      perror("recv() failed.");
+      returnValue = recv(fileDescriptor, buffer ,MAX_BUFFER_LENGTH - bytesReceived, 0);
+      if(returnValue < 0)
+	{
+	  perror("recv() failed.");
+	  exit(1);
+	}
+      bytesReceived += returnValue;
+      printf("%s, %d", buffer, bytesReceived);
+    }
+
+  //IF the username is found by host, proceed to send password
+  if(strcmp(buffer, "400") == 0)
+    {
+      printf("ERROR 400, user not found");
       exit(1);
     }
-  printf(buffer);
-  
-  
-  
-  
-  
+  else //if the user is found
+    {
+      //sending password
+      //memset(buffer, '0', sizeof(char) * MAX_BUFFER_LENGTH);
+      concatenateString(buffer, argv[2]);
+      printf("TO BE HASHED: %s\n", buffer);
+      md5String(buffer, &hash);
+      char* toBeDeleted = convert(&hash);
+      strcpy(buffer, toBeDeleted);
+      free(toBeDeleted);
+      printf("HASH: %s\n", buffer); 
+      //  actually sending the stuff
+      returnValue = send(fileDescriptor, buffer, MAX_BUFFER_LENGTH, 0);
+      if(returnValue < 0)
+	{
+	  perror("send() failed.");
+	  exit(1);	     
+	}
 
-  
+      //check to see if it was a good password
+     memset(buffer, '0', sizeof(char) * MAX_BUFFER_LENGTH);
+     bytesReceived = 0;
+     while(bytesReceived < MAX_BUFFER_LENGTH)
+       {
+	 returnValue = recv(fileDescriptor, buffer ,MAX_BUFFER_LENGTH - bytesReceived, 0);
+	 if(returnValue < 0)
+	   {
+	     perror("recv() failed.");
+		exit(1);
+	   }
+	 bytesReceived += returnValue;
+	 printf("%s, %d", buffer, bytesReceived);
+       }
 
-
-
-
+     if(strcmp(buffer, "200") == 0)
+       {
+	 isConnected = 1;
+	 printf("Connected...\n");
+       } else {
+	 printf("Bad Password\n");
+	 exit(1);
+       } 
+    }
   
   return 0;
 }

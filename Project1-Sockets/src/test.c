@@ -7,6 +7,7 @@ This is the file for random things about c I forgot
 
 ********************/
 
+#include <stdlib.h>
 
 
 
@@ -27,6 +28,7 @@ int main(){
   printf("%d", x);
 
   fopen("test", "r");
-  printf("after");
+  printf("afte\n");
+  printf("TO Thing: %s", getenv("PWD"));
 
 }
